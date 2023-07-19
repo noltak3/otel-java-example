@@ -32,6 +32,16 @@ task buildZip(type: Zip, dependsOn: clean) {
     from ('collector.yaml')
     into('lib') {
         from(jar)
-        from(configurations.runtimeClasspath)
+//        from(configurations.runtimeClasspath)
     }
+}
+
+task getLayerDep(type: Copy, dependsOn: buildZip) {
+    into "$buildDir/layer/java/lib"
+    from(configurations.runtimeClasspath)
+}
+
+task buildLayer(type: Zip, dependsOn: getLayerDep) {
+    archiveFileName = "layer.zip"
+    from("$buildDir/layer/")
 }
