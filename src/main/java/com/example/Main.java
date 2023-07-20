@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,19 +13,12 @@ import java.util.Map;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.library.lib.LibFile;
 
-@SpringBootApplication
-@RestController
-public class Main {
+public class Main implements RequestHandler<Map<String, Object>, String> {
+//public class Main {
 
-    @GetMapping("/hello")
-    public void handleMonitoredRequest(Map<String, Object> event, Context context) throws IOException {
+    public String handleRequest(Map<String, Object> event, Context context) {
         int rand = (int)(Math.random() * 10);
         try {
             for (int i = 0; i < rand; i ++) {
@@ -34,8 +28,7 @@ public class Main {
         } catch (Exception e) {
             System.out.println(e);
         }
-
-        System.out.println("Hello world! This is the print statement for the serverless example.");
+        return "Hello world! This is the print statement for the serverless example.";
     }
 
     public void outboundCall() throws IOException, ExecutionException, InterruptedException, URISyntaxException {
@@ -55,7 +48,4 @@ public class Main {
         System.out.println(response);
     }
 
-    public static void main(String[] args) {
-        SpringApplication.run(Main.class, args);
-    }
 }
