@@ -9,43 +9,40 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Map;
+import java.util.Random;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 import com.library.lib.LibFile;
 
+
 public class Main implements RequestHandler<Map<String, Object>, String> {
-//public class Main {
+
+    final private int BOUND = 4;
 
     public String handleRequest(Map<String, Object> event, Context context) {
-        int rand = (int)(Math.random() * 10);
+        Random rand = new Random();
+        int randomCalls = rand.nextInt(BOUND) + 1;
+        for (int i = 0; i < randomCalls; i++) {
+            String url = ((i % 2) == 0) ? "https://postman-echo.com/get" : "https://www.google.com/";
+            outboundCall(url);
+            LibFile.callSecretService();
+        }
+        return String.format("Success. Called outbound services %s times.", randomCalls);
+    }
+
+    public void outboundCall(String url) {
         try {
-            for (int i = 0; i < rand; i ++) {
-                outboundCall();
-                LibFile.callSecretService();
-            }
-        } catch (Exception e) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(url))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = HttpClient.newBuilder()
+                    .build()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println(response);
+        }  catch (IOException | InterruptedException | URISyntaxException e) {
             System.out.println(e);
         }
-        return "Hello world! This is the print statement for the serverless example.";
     }
-
-    public void outboundCall() throws IOException, ExecutionException, InterruptedException, URISyntaxException {
-        String url;
-        if ((int)((Math.random() * 10) % 2) == 0) {
-            url = "https://postman-echo.com/get";
-        } else {
-            url = "https://www.google.com/";
-        }
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(url))
-                .GET()
-                .build();
-        HttpResponse<String> response = HttpClient.newBuilder()
-                .build()
-                .send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(response);
-    }
-
 }
