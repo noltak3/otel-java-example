@@ -1,21 +1,19 @@
-receivers:
-  otlp:
-    protocols:
-      grpc:
-      http:
-
-exporters:
-  logging:
-    loglevel: debug
-  # otlphttp:
-    # endpoint: "http://10.0.0.138:4318"
-  otlp:
-    endpoint: "10.0.0.138:4317"
-    tls:
-      insecure: true
-
-service:
-  pipelines:
-    traces:
-      receivers: [otlp]
-      exporters: [otlp, logging]
+#receivers:
+#  otlp:
+#    protocols:
+#      grpc:
+#      http:
+#
+#exporters:
+#  logging:
+#    loglevel: debug
+#  otlp:
+#    endpoint: "10.0.0.138:4317"
+#    tls:
+#      insecure: true
+#
+#service:
+#  pipelines:
+#    traces:
+#      receivers: [otlp]
+#      exporters: [otlp, logging]

@@ -14,13 +14,42 @@ import java.util.Random;
 import java.io.IOException;
 
 import com.library.lib.LibFile;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.instrumentation.awslambdacore.v1_0.TracingRequestHandler;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 
-public class Main implements RequestHandler<Map<String, Object>, String> {
+public class Main extends TracingRequestHandler<Map<String, Object>, String> {
 
     final private int BOUND = 4;
 
-    public String handleRequest(Map<String, Object> event, Context context) {
+    static SpanExporter exporter = OtlpGrpcSpanExporter.builder()
+            .setEndpoint("http://10.0.0.138:4317") // your collector IP
+            .build();
+
+    static SdkTracerProvider provider = SdkTracerProvider.builder()
+        .addSpanProcessor(SimpleSpanProcessor.create(exporter))
+        .setSampler(Sampler.alwaysOn())
+        .build();
+
+    private static final OpenTelemetrySdk SDK = OpenTelemetrySdk.builder()
+            .setTracerProvider(provider)
+            .buildAndRegisterGlobal();
+
+    private static final Tracer tracer = SDK.getTracer("NolanOT");
+
+    public Main() {
+        super(SDK);
+    }
+
+    public String doHandleRequest(Map<String, Object> event, Context context) {
         Random rand = new Random();
         int randomCalls = rand.nextInt(BOUND) + 1;
         for (int i = 0; i < randomCalls; i++) {
@@ -32,6 +61,7 @@ public class Main implements RequestHandler<Map<String, Object>, String> {
     }
 
     public void outboundCall(String url) {
+        Span span = tracer.spanBuilder("HTTP request").setSpanKind(SpanKind.CLIENT).startSpan();
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI(url))
@@ -43,6 +73,8 @@ public class Main implements RequestHandler<Map<String, Object>, String> {
             System.out.println(response);
         }  catch (IOException | InterruptedException | URISyntaxException e) {
             System.out.println(e);
+        } finally {
+            span.end();
         }
     }
 }
