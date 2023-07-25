@@ -24,12 +24,10 @@ dependencies {
     implementation files('libs/new-java-lib.jar')
 
     // manual instrumentation dependencies
-    implementation 'io.opentelemetry.instrumentation:opentelemetry-aws-lambda-events-2.2:1.14.0-alpha'
     implementation 'io.opentelemetry:opentelemetry-sdk:1.28.0'
     implementation 'io.opentelemetry:opentelemetry-api:1.28.0'
     implementation 'io.opentelemetry:opentelemetry-exporter-otlp:1.28.0'
     implementation 'io.opentelemetry:opentelemetry-exporter-logging:1.28.0'
-    implementation 'io.opentelemetry:opentelemetry-semconv:1.28.0-alpha'
 }
 
 task buildZip(type: Zip, dependsOn: clean) {
